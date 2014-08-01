@@ -1,0 +1,2 @@
+#!/bin/bash
+time java Main < tests/$1 > output/$1

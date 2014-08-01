@@ -2,17 +2,13 @@ import java.util.*;
 import java.io.*;
 
 public class Main {
-	private static final int SMALL_PRIME_LIMIT = (int) Math.sqrt(1e9) + 1;
-	private static final int RANGE = (int) 1e6;
-	private static PrintWriter output;
-	private static ArrayList<Long> smallPrimes;
 
 	private static ArrayList<Long> getSmallPrimes(int limit) {
 		boolean[] isPrime = new boolean[limit];
 		for(int i = 0; i < limit; isPrime[i++] = true);
 		isPrime[0] = isPrime[1] = false;
 
-		ArrayList<Long> smallPrimes = new ArrayList<Long>(SMALL_PRIME_LIMIT / 10);
+		ArrayList<Long> smallPrimes = new ArrayList<Long>();
 		for(long i = 0; i < limit; i++) {
 			if(isPrime[(int) i]) {
 				for(long j = i * i; j < limit; j += i) isPrime[(int) j] = false;
@@ -22,13 +18,15 @@ public class Main {
 		return smallPrimes;
 	}
 
-	private static long getFirstDivisor(long n) {
-		for(int i = 0; i * i <= n && i < smallPrimes.size(); i++) {
+	private static int getFirstDivisorIndex(long n, ArrayList<Long> smallPrimes) {
+		for(int i = 0; i < smallPrimes.size(); i++) {
 			long nextPrime = smallPrimes.get(i);
-			if(n % nextPrime == 0) return nextPrime;
+
+			if(nextPrime * nextPrime > n) return smallPrimes.size();
+			else if(n % nextPrime == 0)   return i;
 		}
 
-		return n;
+		return smallPrimes.size();
 	}
 
 	public static void output(long m, long n) {
@@ -39,25 +37,30 @@ public class Main {
  		boolean[] isPrime = new boolean[range];
 		for(int i = 0; i < range; isPrime[i++] = true);
 
+		ArrayList<Long> smallPrimes = getSmallPrimes((int) Math.sqrt(n) + 1);
 		for(long i = m; i <= n; i++) {
 			if(isPrime[(int)(i - m)]) {
-				long firstDivisor = getFirstDivisor(i);
-				isPrime[(int)(i - m)] = (firstDivisor == i);
-				for(long j = i + firstDivisor; j <= n; j += firstDivisor) isPrime[(int)(j - m)] = false;
+				int fdIndex = getFirstDivisorIndex(i, smallPrimes);
+				long firstDivisor = i;
+				if(fdIndex < smallPrimes.size()) {
+					firstDivisor = smallPrimes.get(fdIndex);
+					isPrime[(int)(i - m)] = false;
+					smallPrimes.remove(fdIndex);
+				}
+
+				for(long j = i + firstDivisor; j <= n; j += firstDivisor)
+					isPrime[(int)(j - m)] = false;
 			}
 		}
 
 		for(int i = 0; i < range; i++)
-			if(isPrime[i]) output.println((long) i + m);
+			if(isPrime[i]) System.out.println((long) i + m);
 	}
 
 	public static void main(String args[]) throws Exception {		
 		Scanner scanner = new Scanner(System.in);
-		output = new PrintWriter(System.out);
-		smallPrimes = getSmallPrimes(SMALL_PRIME_LIMIT);
 
 		long testCases = scanner.nextLong();
-
 		for(int i = 0; i < testCases; i++) {
 			long m = scanner.nextLong(),
 				 n = scanner.nextLong();
