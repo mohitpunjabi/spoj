@@ -5,9 +5,11 @@ public class Main {
 
 	public static void main(String args[]) throws Exception {		
 		Scanner scanner = new Scanner(System.in);
-		String answer;
 
-		while(!(answer = scanner.nextLine()).equals("42")) System.out.println(answer);
+		long testCases = scanner.nextLong();
+		for(int i = 0; i < testCases; i++) {
+			System.out.println(i + 1);
+		}
 	}
 
 }

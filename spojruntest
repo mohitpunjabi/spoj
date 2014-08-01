@@ -1,0 +1,20 @@
+#!/bin/bash
+echo "Running test: $1";
+time java Main < ./tests/$1 > ./output/$1
+
+diffResult=$(diff -B  -b -Z --unchanged-line-format="" --old-line-format="%dn " --new-line-format="" ./solutions/$1 ./output/$1);
+if [ "$diffResult" = "" ]; then
+	echo -e "\nTEST PASSED";
+else
+	echo -e "\nTEST FAILED\n";
+	printf "| %5s | %-15s | %-15s |\n" "Line" "Expected" "Found";
+	for i in {1..45}; do echo -n "-"; done;
+	echo " ";
+
+	for i in $diffResult; do
+		expected=$(head -$i ./solutions/$1 | tail -1);
+		found=$(head -$i ./output/$1 | tail -1);
+		printf "| %5s | %-15s | %-15s |\n" "$i" "$expected" "$found";
+	done
+fi
+
