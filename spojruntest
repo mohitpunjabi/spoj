@@ -1,12 +1,18 @@
 #!/bin/bash
 echo "Running test: $1";
+
+[ -f ./output/$1 ] && rm ./output/$1
 time java Main < ./tests/$1 > ./output/$1
+
+green='\e[0;32m'
+red='\e[0;31m'
+NC='\e[0m' # No color
 
 diffResult=$(diff -B  -b -Z --unchanged-line-format="" --old-line-format="%dn " --new-line-format="" ./solutions/$1 ./output/$1);
 if [ "$diffResult" = "" ]; then
-	echo -e "\nTEST PASSED";
+	echo -e "\n${green}TEST PASSED${NC}";
 else
-	echo -e "\nTEST FAILED\n";
+	echo -e "\n${red}TEST FAILED${NC}\n";
 	printf "| %5s | %-15s | %-15s |\n" "Line" "Expected" "Found";
 	for i in {1..45}; do echo -n "-"; done;
 	echo " ";
