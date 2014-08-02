@@ -3,6 +3,8 @@ import java.io.*;
 
 public class Main {
 
+	private static final PrintStream out = new PrintStream(new BufferedOutputStream(System.out));
+	private static final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 	private static ArrayList<Long> smallPrimes;
 	private static final long LIMIT = (long) 1e9;
 	
@@ -38,22 +40,24 @@ public class Main {
 			for(long j = start; j <= n; j += prime) isPrime[(int) (j - m)] = false;
 		}
 
-		for(long i = m; i <= n; i++)
-			if(isPrime[(int) (i - m)]) System.out.println(i);
+		for(long i = m; i <= n; i++) if(isPrime[(int) (i - m)]) out.println(i);
 	}
 
 	public static void main(String args[]) throws Exception {		
 		Scanner scanner = new Scanner(System.in);
 		initSmallPrimes((int) Math.sqrt(LIMIT) + 10);
 
-		long testCases = scanner.nextLong();
-		for(int i = 0; i < testCases; i++) {
-			long m = scanner.nextLong(),
-				 n = scanner.nextLong();
+		long testCases = Long.parseLong(in.readLine());
+		for(long i = 0; i < testCases; i++) {
+			StringTokenizer tokenizer = new StringTokenizer(in.readLine());
+			long m = Long.parseLong(tokenizer.nextToken()),
+				 n = Long.parseLong(tokenizer.nextToken());
 
-			if(i > 0) System.out.println();
+			if(i > 0) out.println();
 			output(m, n);
 		}
+
+		out.flush();
 	}
 
 }
