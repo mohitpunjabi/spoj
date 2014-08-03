@@ -1,0 +1,10 @@
+#!/bin/bash
+
+EDGE=$2;
+VERTEX=$1;
+echo "$VERTEX $EDGE";
+for (( i=0; i<$EDGE; i++ )); do
+	v1=$(($RANDOM%$VERTEX + 1));
+	v2=$(($RANDOM%$VERTEX + 1));
+	echo "$v1 $v2";
+done

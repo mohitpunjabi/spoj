@@ -1,0 +1,8 @@
+#!/bin/bash
+
+VERTEX=$1;
+EDGE=$(($VERTEX-1));
+echo "$VERTEX $EDGE";
+for (( i=1; i<=$EDGE; i++ )); do
+	echo "$i $(($i+1))";
+done
