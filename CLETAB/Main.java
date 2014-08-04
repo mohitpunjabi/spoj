@@ -5,9 +5,9 @@ public class Main {
 	private static final PrintStream out = new PrintStream(new BufferedOutputStream(System.out));
 	private static final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
-	public static void output(int n, ArrayList<Integer> orders) throws Exception {
+	public static void output(int n, int[] orders) throws Exception {
 		Cache cache = new Cache(n, orders);
-		for(int order : orders) cache.request(order);
+		for(int i = 0; i < orders.length; i++) cache.request(orders[i]);
 		out.print(cache.getCacheMisses());
 	}
 
@@ -19,9 +19,9 @@ public class Main {
 				m = Integer.parseInt(tokenizer.nextToken());
 
 			tokenizer = new StringTokenizer(in.readLine());
-			ArrayList<Integer> orders = new ArrayList<Integer>(m);
+			int[] orders = new int[m];
 			for(int j = 0; j < m; j++)
-				orders.add(Integer.parseInt(tokenizer.nextToken()));
+				orders[j] = Integer.parseInt(tokenizer.nextToken());
 
 			output(n, orders);
 			out.println();
@@ -37,10 +37,10 @@ class Cache {
 	private int size;
 	private int capacity;
 	private int cacheMisses;
-	private ArrayList<Integer> requests;
+	private int[] requests;
 	private int requestsProcessed;
 
-	public Cache(int capacity, ArrayList<Integer> requests) {
+	public Cache(int capacity, int[] requests) {
 		this.capacity = capacity;
 		this.requests = requests;
 		requestsProcessed = 0;
@@ -85,15 +85,16 @@ class Cache {
 		for(int i = 0; i < shouldRemove.length; i++) shouldRemove[i] = true;
 
 		int removableItems = size;
-		for(int i = requestsProcessed; removableItems > 1 && i < requests.size(); i++) {
-			int currItem = requests.get(i);
+		for(int i = requestsProcessed; removableItems > 1 && i < requests.length; i++) {
+			int currItem = requests[i];
 			if(shouldRemove[currItem] && contains(currItem)) {
 				shouldRemove[currItem] = false;
 				removableItems--;
 			}
 		}
 
-		for(int i = 0; i < shouldRemove.length; i++) if(contains(i) && shouldRemove[i]) return i;
+		for(int i = 0; i < shouldRemove.length; i++)
+			if(contains(i) && shouldRemove[i]) return i;
 		return 0;
 	}
 
