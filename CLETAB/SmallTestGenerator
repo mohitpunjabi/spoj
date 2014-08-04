@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "100";
+for t in {1..100}; do
+	echo "$(($RANDOM%20 + 1)) 40";
+	for i in {1..40}; do
+		echo -n "$(($RANDOM%40 + 1)) ";
+	done
+	echo ""
+done
+

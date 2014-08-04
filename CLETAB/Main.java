@@ -33,7 +33,8 @@ public class Main {
 
 class Cache {
 	public static final int LIMIT = 401;
-	private HashSet<Integer> cache;
+	private boolean[] cache;
+	private int size;
 	private int capacity;
 	private int cacheMisses;
 	private ArrayList<Integer> requests;
@@ -43,12 +44,15 @@ class Cache {
 		this.capacity = capacity;
 		this.requests = requests;
 		requestsProcessed = 0;
-		cache = new HashSet<Integer>(capacity);
+		cache = new boolean[Cache.LIMIT];
 		cacheMisses = 0;
+
+		for(int i = 0; i < cache.length; i++) cache[i] = false;
+		size = 0;
 	}
 
 	public void request(int item) {
-		if(!cache.contains(item)) {
+		if(!contains(item)) {
 			cacheMisses++;
 			add(item);
 		}
@@ -60,36 +64,37 @@ class Cache {
 		return cacheMisses;
 	}
 
-	public String toString() {
-		String string = "";
-		for(int item : cache) string += item + " ";
-		return string;
+	private void add(int item) {
+		if(size == capacity) remove(findRemovableItem());
+		cache[item] = true;
+		size++;
 	}
 
-	private void add(int item) {
-		if(cache.size() == capacity) cache.remove(findRemovableItem());
-		cache.add(item);
+	public void remove(int item) {
+		cache[item] = false;
+		size--;
+	}
+
+	public boolean contains(int item) {
+		return cache[item];
 	}
 
 	private int findRemovableItem() {
- 		int unusedItem = 0,
-			unusedDuration = 0;
+		boolean[] shouldRemove = new boolean[Cache.LIMIT];
 
-		for(int item : cache) {
-			int currDuration = getNextRequestTime(item);
-			if(currDuration > unusedDuration) {
-				unusedItem = item;
-				unusedDuration = currDuration;
+		for(int i = 0; i < shouldRemove.length; i++) shouldRemove[i] = true;
+
+		int removableItems = size;
+		for(int i = requestsProcessed; removableItems > 1 && i < requests.size(); i++) {
+			int currItem = requests.get(i);
+			if(shouldRemove[currItem] && contains(currItem)) {
+				shouldRemove[currItem] = false;
+				removableItems--;
 			}
 		}
 
-		return unusedItem;
+		for(int i = 0; i < shouldRemove.length; i++) if(contains(i) && shouldRemove[i]) return i;
+		return 0;
 	}
 
-	private int getNextRequestTime(int item) {
-		for(int i = requestsProcessed; i < requests.size(); i++)
-			if(requests.get(i) == item) return i;
-
-		return requests.size();
-	}
 }
