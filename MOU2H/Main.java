@@ -3,7 +3,7 @@ import java.io.*;
 
 public class Main {
 	private static final PrintStream out = new PrintStream(new BufferedOutputStream(System.out));
-	private static final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+	private static final BufferedReader in = new BufferedReader(new InputStreamReader(System.in), 2000000);
 
 	private static int H_LIMIT = (int) (1e7) + 4;
 	private static int H_PAD = (int) (4 * (1e6)) + 1;
@@ -12,15 +12,15 @@ public class Main {
 	private static long[] sum;
 	private static int[] last;
 
-	private static int getLast(long height) {
-		return last[(int) height + H_PAD];
+	private static int getLast(int height) {
+		return last[height + H_PAD];
 	}
 
-	private static void setLast(long height, int val) {
-		last[(int) height + H_PAD] = val;
+	private static void setLast(int height, int val) {
+		last[height + H_PAD] = val;
 	}
 
-	public static void output(long[] heights) throws Exception {
+	public static void output(int[] heights) throws Exception {
 		int n = heights.length;
 		for(int i = n - 1; i > 0; i--) heights[i] -= heights[i - 1];
 		for(int i = 0; i <= n; sum[i++] = 0);
@@ -40,14 +40,16 @@ public class Main {
 
 	public static void main(String args[]) throws Exception {		
 		int testCases = Integer.parseInt(in.readLine());
+
 		sum = new long[N_LIMIT];
 		last = new int[H_LIMIT];
 		for(int i = 0; i < H_LIMIT; last[i++] = 0);
+
 		for(int i = 0; i < testCases; i++) {
 			int n = Integer.parseInt(in.readLine());
-			long[] heights = new long[n];
+			int[] heights = new int[n];
 			StringTokenizer tokenizer = new StringTokenizer(in.readLine());
-			for(int j = 0; j < n; j++) heights[j] = (long) Integer.parseInt(tokenizer.nextToken());
+			for(int j = 0; j < n; j++) heights[j] = Integer.parseInt(tokenizer.nextToken());
 
 			output(heights);
 			out.println();
