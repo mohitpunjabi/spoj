@@ -1,0 +1,28 @@
+#!/bin/bash
+
+echo "Cleaning...";
+rm *.class;
+rm output/*
+echo "";
+echo "Building...";
+ javac ScoreGenerator.java;
+ javac Main.java;
+echo "Build complete";
+echo ""
+echo "-----------------------------------";
+
+SCORE=0.0
+N=0
+for i in $(ls ./tests); do
+	printf "%-20s\t" "Running $i:"
+	java Main < tests/$i > output/$i
+	CURRSCORE=$(cat tests/$i output/$i | java ScoreGenerator)
+	SCORE=$(echo $SCORE + $CURRSCORE | bc -l)
+	N=$(echo $N + 1 | bc)
+	printf "%f\n" $CURRSCORE
+done;
+
+echo ""
+
+SCORE=$(echo $SCORE / $N | bc -l)
+printf "%-20s\t%f\n" "Average score:" $SCORE
