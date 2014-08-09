@@ -1,5 +1,13 @@
 #!/bin/bash
 
+echo "Cleaning...";
+rm *.class;
+echo "";
+echo "Building...";
+ javac Main.java;
+echo "Build complete";
+echo "";
+
 for i in $(ls ./tests); do
 	spojruntest $i;
 	echo -e "==============================================";

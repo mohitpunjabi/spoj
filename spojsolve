@@ -1,5 +1,7 @@
 #!/bin/bash
 
 for i in $(ls ./tests); do
+	echo "Solving $i";
 	time java Solution < ./tests/$i > ./solutions/$i;
+	echo "";
 done;
