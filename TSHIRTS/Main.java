@@ -42,10 +42,6 @@ class ModMath {
 		return (sum + MOD) % MOD;
 	}
 
-	public static long add(ArrayList<Integer> nums) {
-		return add((Long[]) nums.toArray());
-	}
-
 	public static long mul(Long ... nums) {
 		long product = 1;
 		for(long num : nums) product = (product * (num % MOD)) % MOD;
@@ -82,18 +78,21 @@ class Party {
 				// waysToPartyWithout = waysToParty - waysToPartyWithT;
 				// ways[tshirt] = waysWithoutT * 1 + waysWithT * (totalTshirts - 1);
 
-				waysBuffer[tshirt] = ModMath.add(waysToParty, ModMath.mul((long) (person.getTshirtCount() - 2),  ways[tshirt]));
+				if(person.has(tshirt))
+					waysBuffer[tshirt] = ModMath.add(waysToParty, ModMath.mul((long) (person.getTshirtCount() - 2),  ways[tshirt]));
+				else
+					waysBuffer[tshirt] = ModMath.mul(ways[tshirt], (long) person.getTshirtCount());
 			}
 		}
 
 		peopleInvited++;
 		waysToParty = getNewWaysToParty(person, waysToParty);
 		for(int i = 0; i < ways.length; i++) ways[i] = waysBuffer[i];
-/*
+
 		System.err.println("Invited " + person.toString());
 		for(int i = 0; i < 20; i++) System.err.print(ways[i] + " ");
 		System.err.println("| " + waysToParty);
-*/
+
 	}
 
 	public long getWaysToParty() {

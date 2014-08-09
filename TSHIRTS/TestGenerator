@@ -1,0 +1,15 @@
+#!/bin/bash
+T=$1
+echo $T;
+
+for ((t=$T; t > 0; t--)); do
+	N=$(($RANDOM%10 + 1))
+	echo $N;
+
+	for ((i=$N; i > 0; i--)); do
+		for ((j=$(($RANDOM%100)); j >= 0; j--)) ; do
+			echo -n "$(($RANDOM%100 + 1)) ";
+		done
+		echo "";
+	done
+done
