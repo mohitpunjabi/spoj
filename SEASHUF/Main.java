@@ -5,22 +5,49 @@ public class Main {
 	private static final PrintStream out = new PrintStream(new BufferedOutputStream(System.out));
 	private static final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
+	private static void rotate(ArrayList<Long> a, int from, int to) {
+		long end = a.get(from);
+		for(int i = from; i < to; i++) a.set(i, a.get(i + 1));
+		a.set(to, end);
+	}
+
+	public static long f(ArrayList<Long> a) {
+		long s = 0;
+		for(int i = 0; i < a.size(); i++) {
+			if(i + i < a.size()) s += a.get(i);
+			else				 s -= a.get(i);
+		}
+
+		return Math.abs(s);
+	}
+
+	public static double score(ArrayList<Long> a, ArrayList<Shuffle> shuffles) throws Exception {
+		long init = f(a);
+
+		int rangeSum = 0;
+		for(int i = 0; i < shuffles.size(); i++) 
+			rotate(a, shuffles.get(i).from - 1, shuffles.get(i).to - 1);
+
+		long s = f(a);
+		return (double) (init - s) / init;
+	}
+
 	public static void output(ArrayList<Long> a) throws Exception {
-		Shuffler shuffler = new Shuffler(new ArrayList<Long>(a));
+		NewShuffler newShuffler = new NewShuffler(new ArrayList<Long>(a));
 		OldShuffler oldShuffler = new OldShuffler(new ArrayList<Long>(a));
-		shuffler.minimizeScore();
+		newShuffler.minimizeScore();
 		oldShuffler.minimizeScore();
 
 		ArrayList<Shuffle> shuffles = null;
-		if(shuffler.getScore() > oldShuffler.minimizeScore())	shuffles = shuffler.getShuffles();
-		else													shuffles = oldShuffler.getShuffles();
-
-		if(shuffles != null) {
-			out.println(shuffles.size());
-			for(Shuffle shuffle : shuffles) out.println(shuffle.toString());
+		if(score(new ArrayList<Long>(a), newShuffler.getShuffles()) >
+		   score(new ArrayList<Long>(a), newShuffler.getShuffles())) {
+			shuffles = newShuffler.getShuffles();
 		}
 		else
-			out.println("0");
+			shuffles = oldShuffler.getShuffles();
+
+		out.println(shuffles.size());
+		for(Shuffle shuffle : shuffles) out.println(shuffle.toString());
 	}
 
 	public static void main(String args[]) throws Exception {		
@@ -49,13 +76,13 @@ class Shuffle {
 	}
 }
 
-class Shuffler { 
-	private ArrayList<Long> a;
-	private ArrayList<Shuffle> shuffles;
-	private int shuffleRangeSum;
-	private long score;
-	private long initialScore;
-	private Random rand;
+abstract class Shuffler { 
+	protected ArrayList<Long> a;
+	protected ArrayList<Shuffle> shuffles;
+	protected int shuffleRangeSum;
+	protected long score;
+	protected long initialScore;
+	protected Random rand;
 
 	public Shuffler(ArrayList<Long> a) {
 		this.a  = a;
@@ -72,13 +99,72 @@ class Shuffler {
 			   shuffleRangeSum + (shuffle.to - shuffle.from + 1) < 2 * a.size();
 	}
 
+	public abstract void minimizeScore();
+
+	protected boolean checkAndAddShuffle(Shuffle shuffle) {
+		if(isShufflePossible(shuffle)) {
+			addShuffle(shuffle);
+			return true;
+		}
+
+		return false;
+	}
+	
+	protected abstract Shuffle getNextShuffle();
+
+	protected void addShuffle(Shuffle shuffle) {
+		long end = a.get(shuffle.from - 1);
+		for(int i = shuffle.from - 1; i < shuffle.to - 1; i++) 
+			a.set(i, a.get(i + 1));
+
+		a.set(shuffle.to - 1, end);
+		shuffles.add(shuffle);
+		shuffleRangeSum += shuffle.to - shuffle.from  + 1;
+		score += getScoreChangeFromShuffle(shuffle);
+
+		for(long ai : a) System.err.print(ai + " ");
+		System.err.println();
+	}
+
+	protected long getScoreChangeFromShuffle(Shuffle shuffle) {
+		int mid = (a.size() / 2) + 1;
+		if(shuffle.from < mid && shuffle.to >= mid)
+			 return 2 * (a.get(mid - 1) - a.get(shuffle.from - 1));
+
+		return 0;
+	}
+
+	protected long computeScore() {
+		long s = 0;
+		for(int i = 0; i < a.size(); i++) {
+			if(i + i < a.size()) s += a.get(i);
+			else				 s -= a.get(i);
+		}
+		return s;
+	}
+
+	public long getScore() {
+		return Math.abs(initialScore) - Math.abs(score);
+	}
+
+	public ArrayList<Shuffle> getShuffles() {
+		return shuffles;
+	}
+}
+
+class NewShuffler extends Shuffler { 
+
+	public NewShuffler(ArrayList<Long> a) {
+		super(a);
+	}
+
 	public void minimizeScore() {
 		Shuffle shuffle = getNextShuffle();
 		int mid = (a.size() / 2);
 		int midIndexNotChecked = mid;
 		while(true) {
 			checkAndAddShuffle(shuffle);
-			if(!trySwap(mid, midIndexNotChecked++)) return;
+			if(!trySwap(mid, ++midIndexNotChecked)) return;
 			shuffle = getNextShuffle();
 		}
 	}
@@ -107,17 +193,7 @@ class Shuffler {
 		return true;
 	}
 	
-
-	private boolean checkAndAddShuffle(Shuffle shuffle) {
-		if(isShufflePossible(shuffle)) {
-			addShuffle(shuffle);
-			return true;
-		}
-
-		return false;
-	}
-	
-	public Shuffle getNextShuffle() {
+	protected Shuffle getNextShuffle() {
 		int mid = (a.size() / 2);
 		int suitableIndex = getSuitableIndex();
 		if(suitableIndex >= 0) return new Shuffle(suitableIndex + 1, mid + mid);
@@ -130,10 +206,47 @@ class Shuffler {
 		long maxDifference = 1;
 		int suitableIndex = -1;
 		for(int i = mid - 1; i >= 0; i--) {
-			long newScore = score + getScoreChangeFromShuffle(new Shuffle(i + 1, mid + 1));
+			long newScore = score + getScoreChangeFromShuffle(new Shuffle(i + 1, mid + mid));
 			long newDifference = Math.abs(score) - Math.abs(newScore);
 			if(newDifference > maxDifference) {
-//				return suitableIndex;
+				maxDifference = newDifference; 
+				suitableIndex = i;
+			}
+		}
+
+		return suitableIndex;
+	}
+}
+
+class OldShuffler extends Shuffler { 
+
+	public OldShuffler(ArrayList<Long> a) {
+		super(a);
+	}
+
+	public void minimizeScore() {
+		Shuffle shuffle = getNextShuffle();
+		while(true) {
+			if(isShufflePossible(shuffle))	addShuffle(shuffle);
+			else {
+				int mid = (a.size() / 2);
+				Shuffle newMid = new Shuffle(mid + 1, mid + mid);
+				if(isShufflePossible(newMid))	addShuffle(newMid);
+				else							break;
+			}
+
+			shuffle = getNextShuffle();
+		}
+	}
+
+	private int getSuitableIndex() {
+		int mid = (a.size() / 2);
+		long maxDifference = 0;
+		int suitableIndex = -1;
+		for(int i = 0; i < mid; i++) {
+			long newScore = score + getScoreChangeFromShuffle(new Shuffle(i + 1, mid + mid));
+			long newDifference = Math.abs(score) - Math.abs(newScore);
+			if(newDifference > maxDifference) {
 				maxDifference = newDifference; 
 				suitableIndex = i;
 			}
@@ -142,56 +255,12 @@ class Shuffler {
 		return suitableIndex;
 	}
 
-	private int findIndexGreaterThan(long val, int from, int to) {
-		for(int i = from; i <= to; i++)
-			if(a.get(i) > val) return i;
+	protected Shuffle getNextShuffle() {
+		int mid = (a.size() / 2);
+		int suitableIndex = getSuitableIndex();
+		if(suitableIndex >= 0) return new Shuffle(suitableIndex + 1, mid + mid);
 
-		return -1;
+		return null;
 	}
 
-	private int findIndexLessThan(long val, int from, int to) {
-		for(int i = from; i <= to; i++)
-			if(a.get(i) < val) return i;
-
-		return -1;
-	}
-
-	public void addShuffle(Shuffle shuffle) {
-		long end = a.get(shuffle.from - 1);
-		for(int i = shuffle.from - 1; i < shuffle.to - 1; i++) 
-			a.set(i, a.get(i + 1));
-
-		a.set(shuffle.to - 1, end);
-		shuffles.add(shuffle);
-		shuffleRangeSum += shuffle.to - shuffle.from  + 1;
-		score += getScoreChangeFromShuffle(shuffle);
-
-		for(long ai : a) System.err.print(ai + " ");
-		System.err.println();
-	}
-
-	private long getScoreChangeFromShuffle(Shuffle shuffle) {
-		int mid = (a.size() / 2) + 1;
-		if(shuffle.from < mid && shuffle.to >= mid)
-			 return 2 * (a.get(mid - 1) - a.get(shuffle.from - 1));
-
-		return 0;
-	}
-
-	private long computeScore() {
-		long s = 0;
-		for(int i = 0; i < a.size(); i++) {
-			if(i + i < a.size()) s += a.get(i);
-			else				 s -= a.get(i);
-		}
-		return s;
-	}
-
-	public long getScore() {
-		return Math.abs(initialScore) - Math.abs(computeScore());
-	}
-
-	public ArrayList<Shuffle> getShuffles() {
-		return shuffles;
-	}
 }
