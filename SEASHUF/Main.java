@@ -6,9 +6,14 @@ public class Main {
 	private static final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
 	public static void output(ArrayList<Long> a) throws Exception {
-		Shuffler shuffler = new Shuffler(a);
+		Shuffler shuffler = new Shuffler(new ArrayList<Long>(a));
+		OldShuffler oldShuffler = new OldShuffler(new ArrayList<Long>(a));
 		shuffler.minimizeScore();
-		ArrayList<Shuffle> shuffles = shuffler.getShuffles();
+		oldShuffler.minimizeScore();
+
+		ArrayList<Shuffle> shuffles = null;
+		if(shuffler.getScore() > oldShuffler.minimizeScore())	shuffles = shuffler.getShuffles();
+		else													shuffles = oldShuffler.getShuffles();
 
 		if(shuffles != null) {
 			out.println(shuffles.size());
@@ -69,19 +74,49 @@ class Shuffler {
 
 	public void minimizeScore() {
 		Shuffle shuffle = getNextShuffle();
+		int mid = (a.size() / 2);
+		int midIndexNotChecked = mid;
 		while(true) {
-			if(isShufflePossible(shuffle))	addShuffle(shuffle);
-			else {
-				int mid = (a.size() / 2);
-				Shuffle newMid = new Shuffle(mid + 1, mid + mid);
-				if(isShufflePossible(newMid))	addShuffle(newMid);
-				else							break;
-			}
-
+			checkAndAddShuffle(shuffle);
+			if(!trySwap(mid, midIndexNotChecked++)) return;
 			shuffle = getNextShuffle();
 		}
 	}
 
+	private boolean trySwap(int i1, int i2) {
+		if(i1 == i2) 	return true;
+		if(i1 > i2)		return trySwap(i2, i1);
+
+		Shuffle shuffle = new Shuffle(i1 + 1, i2 + 1);
+		if(!isShufflePossible(shuffle)) return false;
+		shuffles.add(shuffle);
+		shuffleRangeSum += shuffle.to - shuffle.from  + 1;
+		score += getScoreChangeFromShuffle(shuffle);
+		for(int i = i2 - 1; i > i1; i--) {
+			shuffle = new Shuffle(i + 1, i);
+			if(!isShufflePossible(shuffle)) return false;
+			shuffles.add(shuffle);
+			shuffleRangeSum += shuffle.to - shuffle.from  + 1;
+			score += getScoreChangeFromShuffle(shuffle);
+		}
+
+		long temp = a.get(i1);
+		a.set(i1, a.get(i2));
+		a.set(i2, temp);
+
+		return true;
+	}
+	
+
+	private boolean checkAndAddShuffle(Shuffle shuffle) {
+		if(isShufflePossible(shuffle)) {
+			addShuffle(shuffle);
+			return true;
+		}
+
+		return false;
+	}
+	
 	public Shuffle getNextShuffle() {
 		int mid = (a.size() / 2);
 		int suitableIndex = getSuitableIndex();
@@ -92,12 +127,13 @@ class Shuffler {
 
 	private int getSuitableIndex() {
 		int mid = (a.size() / 2);
-		long maxDifference = 0;
+		long maxDifference = 1;
 		int suitableIndex = -1;
-		for(int i = 0; i < mid; i++) {
+		for(int i = mid - 1; i >= 0; i--) {
 			long newScore = score + getScoreChangeFromShuffle(new Shuffle(i + 1, mid + 1));
 			long newDifference = Math.abs(score) - Math.abs(newScore);
 			if(newDifference > maxDifference) {
+//				return suitableIndex;
 				maxDifference = newDifference; 
 				suitableIndex = i;
 			}
@@ -149,6 +185,10 @@ class Shuffler {
 			else				 s -= a.get(i);
 		}
 		return s;
+	}
+
+	public long getScore() {
+		return Math.abs(initialScore) - Math.abs(computeScore());
 	}
 
 	public ArrayList<Shuffle> getShuffles() {
