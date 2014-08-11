@@ -1,0 +1,27 @@
+#!/bin/bash
+
+N=$1
+echo $N
+
+for ((i=0; i<$N; i++)); do
+	echo -n "$(($RANDOM%10000)) "
+done
+
+echo ""
+
+M=$2
+
+echo $M
+
+for ((i=0; i<$M; i++)); do
+	TYPE=$(($RANDOM%2))
+	L=$(($RANDOM%$N))
+	R=$(($L + $RANDOM%($N-$L)))
+	if [ $TYPE -eq 0 ]
+	then
+		echo "0 $L $R $(($RANDOM%60))"
+	else
+		echo "1 $L $R"
+	fi	
+done
+

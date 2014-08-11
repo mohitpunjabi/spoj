@@ -7,9 +7,15 @@ class Building {
 	private int rotation;
 	private int length;
 
+	public int minHeight;
+	public int maxHeight;
+
 	private static ArrayList<ArrayList<Integer>> heightsLookup;
 	private static final int HEIGHT_LIMIT = 10000;
 	private static int[][] lcmLookup; 
+
+	public static Building ZERO;
+
 
 	static {
 		lcmLookup = new int[70][70];
@@ -19,6 +25,8 @@ class Building {
 		heightsLookup = new ArrayList<ArrayList<Integer>>(HEIGHT_LIMIT);
 		for(int i = 0; i < HEIGHT_LIMIT; i++)
 			heightsLookup.add(new ArrayList<Integer>());
+
+		ZERO = new Building("0");
 	}
 
 	public Building(String initHeight) {
@@ -27,12 +35,22 @@ class Building {
 		heights = heightsLookup.get(Integer.parseInt(initHeight));
 		if(heights.size() == 0)
 			populateHeights(heights, initHeight);
+
+		minHeight = Collections.min(heights);
+		maxHeight = Collections.max(heights);
 	}
 
 	public Building(ArrayList<Integer> heights) {
 		this.heights = heights;
 		rotation = 0;
 		length = heights.size();
+
+		minHeight = Collections.min(heights);
+		maxHeight = Collections.max(heights);
+	}
+
+	public Building(Building b) {
+		copyOf(b);
 	}
 
 	public void destroy(int force) {
@@ -68,29 +86,46 @@ class Building {
 		return b;
 	}
 
+	public void copyOf(Building b) {
+		heights = new ArrayList<Integer>(b.allHeights());
+		minHeight = b.minHeight;
+		maxHeight = b.maxHeight;
+		length = b.getLength();
+		rotation = b.getRotation();
+	}
+
 	public void combine(Building a, Building b) {
 		int mergedLength = lcm(a.getLength(), b.getLength());
-		heights.clear();
 		ArrayList<Integer> aHeights = a.allHeights(),
 			 			   bHeights = b.allHeights();
+
+		heights = new ArrayList<Integer>(mergedLength);
 		for(int i = 0; i < mergedLength; i++) {
 			int aHeight = aHeights.get((a.getRotation() + i) % a.getLength()),
 				bHeight = bHeights.get((b.getRotation() + i) % b.getLength());
-			heights.add(Math.max(aHeight, bHeight));
-		}
 
+			int maxHeight = (aHeight > bHeight)? aHeight: bHeight;
+			heights.add(maxHeight);
+		}
 		rotation = 0;
 	}
 
 	public static Building newMergedBuilding(Building a, Building b) {
-		int mergedLength = lcm(a.getLength(), b.getLength());
-		ArrayList<Integer> mergedHeights = new ArrayList<Integer>(mergedLength),
-						   aHeights = a.allHeights(),
+		ArrayList<Integer> aHeights = a.allHeights(),
 			 			   bHeights = b.allHeights();
+
+		if(a.minHeight >= b.maxHeight)		return new Building(a);
+		else if(b.minHeight >= a.maxHeight)	return new Building(b);
+
+		int mergedLength = lcm(a.getLength(), b.getLength());
+		ArrayList<Integer> mergedHeights = new ArrayList<Integer>(mergedLength);
+		
 		for(int i = 0; i < mergedLength; i++) {
-			int aHeight = aHeights.get((a.getRotation() + i) % a.getLength()),
-				bHeight = bHeights.get((b.getRotation() + i) % b.getLength());
-			mergedHeights.add(Math.max(aHeight, bHeight));
+			int aHeight = aHeights.get(i % a.getLength()),
+				bHeight = bHeights.get(i % b.getLength());
+
+			int maxHeight = (aHeight > bHeight)? aHeight: bHeight;
+			mergedHeights.add(maxHeight);
 		}
 
 		return new Building(mergedHeights);
@@ -109,20 +144,16 @@ class Building {
 	private static void populateHeights(ArrayList<Integer> heights, String initHeight) {
 		String currHeight = initHeight;
 		int length = currHeight.length();
+		char[] h = currHeight.toCharArray();
 		for(int i = 0; i < length; i++) {
 			heights.add(Integer.parseInt(currHeight));
-			currHeight = rotate(currHeight);
+
+			char first = h[0];
+			for(int j = 0; j < h.length - 1; j++) h[j] = h[j + 1];
+			h[h.length - 1] = first;
+
+			currHeight = new String(h);
 		}
-	}
-
-	private static String rotate(String height) {
-		char[] h = height.toCharArray();
-
-		char first = h[0];
-		for(int i = 0; i < h.length - 1; i++) h[i] = h[i + 1];
-		h[h.length - 1] = first;
-
-		return new String(h);
 	}
 
 }
@@ -188,7 +219,8 @@ class SegmentTree {
 	private Node root;
 
 	public SegmentTree(ArrayList<Building> elems) {
-		root = build(elems, 0, elems.size() - 1);
+//		root = build(elems, 0, elems.size() - 1);
+		root = buildTopDown(elems);
 	}
 
 	public Building getMaxIn(int from, int to) {
@@ -227,6 +259,37 @@ class SegmentTree {
 		return Building.max(_getMaxIn(node.left, from, to), _getMaxIn(node.right, from, to));
 	}
 
+	private int pow2Round(int n) {
+		n--;
+		n |= n >> 1; 
+		n |= n >> 2;
+		n |= n >> 4;
+		n |= n >> 8;
+		n |= n >> 16;
+		return n + 1;  
+	}
+
+	private Node buildTopDown(ArrayList<Building> elems) {
+		int numElems = elems.size();
+
+		int newNumElems = pow2Round(numElems);
+		Node[] nodes = new Node[2 * newNumElems + 1];
+		for(int i = 0; i < newNumElems; i++) {
+			if(i < numElems)	nodes[newNumElems + i] = new Node(elems.get(i), i, i);
+			else				nodes[newNumElems + i] = new Node(Building.ZERO, i, i);
+		}
+
+		numElems = newNumElems;
+
+		for(int level = numElems; level > 1; level /= 2) {
+			for(int i = level; i < 2 * level - 1; i += 2) {
+		  		Building merged = Building.newMergedBuilding(nodes[i].value, nodes[i + 1].value);
+				nodes[i / 2] = new Node(merged, nodes[i].from, nodes[i + 1].to, nodes[i], nodes[i + 1]);
+			}
+		}
+		
+		return nodes[1];
+	}
 	private Node build(ArrayList<Building> elems, int from, int to) {
 		if(from == to) return new Node(elems.get(from), from, to);
 
@@ -279,8 +342,8 @@ public class Main {
 
 		for(int i = 0; i < m; i++) {
 			tokenizer = new StringTokenizer(in.readLine());
-			int type = Integer.parseInt(tokenizer.nextToken());
-			if(type == 0) {
+			String type = tokenizer.nextToken();
+			if(type.charAt(0) == '0') {
 				int l = Integer.parseInt(tokenizer.nextToken()),
 					r = Integer.parseInt(tokenizer.nextToken()),
 					f = Integer.parseInt(tokenizer.nextToken());
