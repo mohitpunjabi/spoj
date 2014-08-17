@@ -1,0 +1,22 @@
+Case #1:
+/* file header */                                 
+
+int spawn_workers(int worker_count) {
+  
+  return 0; 
+}
+
+int main() {
+  printf("Hello  world");
+  int worker_count = 0144;
+  if (spawn_workers(worker_count) != 0) {
+    exit(-1);
+  }
+  return 0;
+}
+\*-----**-----*/
+y_ !*nP8 9<n_LSIsk/ Qy
+/V9
+W2gx
+Gru;rV(V
+Gc*BYsx/mS/nvz_F s*v

@@ -1,0 +1,74 @@
+//*no recursion*/* file header */                                 
+/***********************
+* Sample input program *
+***********************/
+int spawn_workers(int worker_count) {
+  /* The block below is supposed to spawn 100 workers.
+     But it creates many more.
+     Commented until I figure out why.
+  for (int i = 0; i < worker_count; ++i) {
+    if(!fork()) {
+      /* This is the worker. Start working. */
+      do_work();
+    }
+  }
+  */
+  return 0; /* successfully spawned 100 workers */
+}
+
+int main() {
+  printf("Hello /*a comment inside string*/ world");
+  int worker_count = 0/*octal number*/144;
+  if (spawn_workers(worker_count) != 0) {
+    exit(-1);
+  }
+  return 0;
+}
+\*-----*/* random cases follow */*-----*/
+y_ !*n/*B[uMnBE/*NL*///g4z/*
+%/*6Yd
+m*/*qAc,q "
+ 
+n/
+YC*&K /*H//*SZomU/*I
+&paU fh?XnN17
+tn/*/*Yp*/SN*//*LoCFintFc*/gz**1MN
+*<mzXw*/*/A7mep/*1
+D/*oA/*/*d9
+4Aexmpmt/*l *!6 (UmRw s*/*/[U#4eM/"/yVE*gXz9*RCdnVz9H}*/GEj5P*W91cD)/*
+lj/*ZGiWiX*GazJY*/En^smibCv|/HMw/*2XS0Y/* H*/e/z5sc9IU
+pPo
+_RLdF-V-3Wn-W./ <p/ylf*/F*/*/hBuf/*hR_*Q/*KP/*_wu^*3c_a z?s,H**/iG#MBD
+&/wYl*/v*8**//AMA/*f*/m/*JN/*aqPkiLO*w1SfH54@yDmK/****/t.J=/*6
+*|8ES_*/(/*o*/zc/uTN6*/Z'?
+[V5I*x*/WL
+tB
+P*/f/AIx/A-GDQ*/e;6T'*C/ ik*kNJxC* T kV**Sc1%{/*XBfKHDP./*
+Y*/ WL5Q!q*E0*/*RBtw8n//*w */R*/x
+)z*27/I3A[Fw\j7 K%+5/*6q9 d*6/**/>nW/*M9*/P**/**//**/P/*c=6XD/w*:2U v*/8 9</**/n_LSIs/*R
+C=Z  /E*Dm*/k/ Qy
+//*Jgh3wDjj *//*
+i/*FhM=2/
+/* <
+I TOu>2h4W*/w#i. UReNaiA)Foh786u
+fT8oE4/& *//*AZfkjio*V7X
+C*//*e3W*//*L //*mB2WNFG+UE*/ 9E
+
+v%V
+QRo'?J Y/Hn;e K*/u*C*/V9
+W2gx
+G/*Ocf
+(rD8l/**?4*/)*eG B'qLX1"_E2~I2VF
+s* 
+@ j*OPa<Br(1FP+mHD/n
+
+yfsit*/ru;rV(V
+Gc*BYsx/mS/nvz/*/*F*/N]j'^CODhbp1Uf)**//*U7QX* WJua/*9K*/0#fb~gE 7hy/*EI&Y2///Om(p*/ */_F s*v/*MH OuzQ//H9A /**f9YJq7*/] AjLq^ 8/
+*agy/*ZW?
+*KCYpXnj)
+/*&*O*P-
+Wcv3IFn 4
+/),Hg i*/sRWN//*UaUw*0s//*5Ot%9t/u0*/a/
+=/*/*J2hNN2y<*/q/sHzUv
+R9z/*mWZwIcpxdcvIJ]V*//MbQ
+eQ .'q/=g5/H*/x3/*kRk3*/x!eahwa8E*a9)PFW2p5WjJ//*OdG*/*/*/*/
