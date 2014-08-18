@@ -11,10 +11,13 @@ public class Main {
 	public static void main(String args[]) throws Exception {		
 		int testCases = Integer.parseInt(in.readLine());
 		for(int i = 0; i < testCases; i++) {
+			int n = Integer.parseInt(in.readLine());
+
 			StringTokenizer tokenizer = new StringTokenizer(in.readLine());
 			int x = Integer.parseInt(tokenizer.nextToken()),
 				y = Integer.parseInt(tokenizer.nextToken());
 
+			out.print("Case #" + (i + 1) + ": ");
 			output(x, y);
 			out.println();
 		}
