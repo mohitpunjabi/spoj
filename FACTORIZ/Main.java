@@ -7,23 +7,24 @@ public class Main {
 	private static final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
 	private static long PRIME_LIMIT = (long) 1e4;
-	private static long BIG_FACTOR_TRY_LIMIT = (int) 20;
+	private static long BIG_FACTOR_TRY_LIMIT = (int) 40;
 	private static ArrayList<Long> primes;
 	
 	static {
 		boolean[] seive = new boolean[(int) PRIME_LIMIT + 1];
 		for(int i = 0; i < PRIME_LIMIT; seive[i++] = true);
 		seive[1] = seive[0] = false;
-		for(long i = 0; i < PRIME_LIMIT; i++) 
-			if(seive[(int) i]) 
+		primes = new ArrayList<Long>();
+
+		for(long i = 2; i < PRIME_LIMIT; i++) {
+			if(seive[(int) i]) {
 				for(long j = i * i; j < PRIME_LIMIT; j += i)
 					seive[(int) j] = false;
+				primes.add(i);
+			}
+		}
 
-		primes = new ArrayList<Long>();
-		for(int i = 0; i < PRIME_LIMIT; i++)
-			if(seive[i]) primes.add((long) i);
 	}
-
 
 	private static ArrayList<BigInteger> getFactors(BigInteger n) {
 		ArrayList<BigInteger> factors = new ArrayList<BigInteger>();
@@ -44,11 +45,11 @@ public class Main {
 
 	private static BigInteger nextRandom(int digitLimit, Random rnd) {
 		StringBuilder num = new StringBuilder();
-		for(int i = 0; i < digitLimit; i++) {
-			num.append("" + rnd.nextInt(10));
-		}
+		num.append("1");
+		for(int i = 0; i < digitLimit - 1; i++) 
+			num.append("0");
 
-		return new BigInteger(num.reverse().toString());
+		return new BigInteger(num.toString());
 	}
 
 	private static ArrayList<BigInteger> getBigFactors(BigInteger n) {
@@ -58,12 +59,13 @@ public class Main {
 		int tries = 0;
 		while(tries < BIG_FACTOR_TRY_LIMIT) {
 			int nDigits = n.toString().length();
-			if(nDigits < 30) break;
-			BigInteger rand = nextRandom(Math.min(50, nDigits / 2), rnd);
-			BigInteger g = n.gcd(rand);
-			if(g.compareTo(BigInteger.ONE) > 0) {
-				bigFactors.add(g);
-				n = n.divide(g);
+			if(nDigits < 12) break;
+			BigInteger rand = nextRandom(12, rnd);
+			BigInteger rem = n.mod(rand);
+			rand = rand.add(n.subtract(rem));
+			if(rand.compareTo(n) < 0) {
+				bigFactors.add(rand);
+				n = n.divide(rand);
 			}
 			tries++;
 		}
