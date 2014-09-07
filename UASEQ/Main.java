@@ -4,70 +4,87 @@ import java.io.*;
 class Progression {
 
 	private int startIndex;
-	private int start;
-	private int diff;
-	private int size;
-	private ArrayList<Integer> elems;
+	private ArrayList<Long> elems;
 
-	public Progression(int startIndex, ArrayList<Integer> elems) {
+	public Progression(int startIndex, ArrayList<Long> elems) {
 		this.startIndex = startIndex;
 		this.elems = elems;
-		this.start = elems.get(startIndex);
-		this.diff = (startIndex >= elems.size() - 1)? 0: elems.get(startIndex + 1) - elems.get(start);
-		this.size = findSize();
 	}
 
-	private int findSize() {
-		if(startIndex >= elems.size() - 1) return 1;
-		int size = 2;
-		for(int i = startIndex + 2; i < elems.size(); i++) {
-			if(elems.get(i) - elems.get(i - 1) != diff) break;
-			size++;
-		}
-
-		return size;
+	public long diff() {
+		return elems.get(startIndex + 1) - elems.get(startIndex);
 	}
 
-	public int get(int i) {
-		return start + (i - startIndex) * diff;
-	}
-
-	public int size() {
-		return size;
+	public long get(int i) {
+		return elems.get(startIndex) + (i - startIndex) * diff();
 	}
 
 	public String toString() {
 		StringBuilder str = new StringBuilder();
-
-		str.append("[" + start + " " + diff + " " + size + "]: ");
-
-		int curr = start;
-		for(int i = 0; i < size; i++) {
-			str.append(curr).append(" ");
-			curr += diff;
-		}
+//		str.append(" [" + get(startIndex) + " " + get(startIndex + 1) + "]");
+		for(int i = 0; i < elems.size(); i++)
+			str.append(get(i) + " ");
 		return str.toString();
 	}
 
+	public int getChangeCount(int limit) {
+		int changeCount = 0;
+		for(int i = 0; i < elems.size(); i++) {
+			if(get(i) != elems.get(i)) changeCount++;
+			if(changeCount > limit) return Integer.MAX_VALUE;
+		}
+		return changeCount;
+	}
+
+	public boolean equals(Object obj) {
+		if(!(obj instanceof Progression)) return false;
+		Progression rhs = (Progression) obj;
+		return get(0) == rhs.get(0) && diff() == rhs.diff();
+	}
+
+	public int hashCode() {
+		return (int) ((get(0) + diff()) % 1000000007);
+	}
 }
 
 public class Main {
 	private static final PrintStream out = new PrintStream(new BufferedOutputStream(System.out));
 	private static final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
-	public static ArrayList<Progression> getProgressions(ArrayList<Integer> elems) {
-		ArrayList<Progression> progressions = new ArrayList<Progression>();
-		for(int i = 0; i < elems.size(); ) {
-			Progression p = new Progression(i, elems);
-			System.err.println(p.toString());
-			i += p.size();
-			progressions.add(p);
+	static class ProgressionBeautyComparator implements Comparator<Progression> {
+	
+		public int compare(Progression a, Progression b) {
+			if(a.get(0) < b.get(0))			return -1;
+			else if(a.get(0) > b.get(0))	return 1;
+			else if(a.diff() < b.diff())	return -1;
+			else if(a.diff() > b.diff())	return 1;
+
+			return 0;
 		}
-		return progressions;
+
 	}
 
-	public static void output(ArrayList<Integer> elems, int k) throws Exception {
-		ArrayList<Progression> progressions = getProgressions(elems);
+	public static void output(ArrayList<Long> elems, int k) throws Exception {
+		HashMap<Progression, Integer> counts = new HashMap<Progression, Integer>();
+		ArrayList<Progression> progressions = new ArrayList<Progression>();
+		for(int i = 0; i < elems.size() - 1; i++)
+			progressions.add(new Progression(i, elems));
+		Collections.sort(progressions, new ProgressionBeautyComparator());
+
+		for(Progression p : progressions) {
+			int count = 0;
+			if(counts.containsKey(p))	count = counts.get(p);
+			else						count = p.getChangeCount(k);
+//			System.err.print(p);
+//			System.err.println(" " + p.getChangeCount(k));
+
+			if(count <= k) {
+				out.print(p);
+				return;
+			}
+
+			counts.put(p, count);
+		}
 	}
 
 	public static void main(String args[]) throws Exception {		
@@ -75,10 +92,10 @@ public class Main {
 		int n = Integer.parseInt(tokenizer.nextToken()),
 			k = Integer.parseInt(tokenizer.nextToken());
 
-		ArrayList<Integer> elems = new ArrayList<Integer>();
+		ArrayList<Long> elems = new ArrayList<Long>();
 		tokenizer = new StringTokenizer(in.readLine());
 		for(int i = 0; i < n; i++)
-			elems.add(Integer.parseInt(tokenizer.nextToken()));
+			elems.add(Long.parseLong(tokenizer.nextToken()));
 
 		output(elems, k);
 		out.println();
