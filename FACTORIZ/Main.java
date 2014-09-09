@@ -32,40 +32,34 @@ public class Main {
 	static {
 		primes = new ArrayList<Long>();
 		for(int i = 0; i < primesArr.length; i++) primes.add(primesArr[i]);
-//		addPrimes((long) 1e8, (long) (1e8 + 10000));
-		Random rnd = new Random();
-		int pSize = primes.size();
-		for(int i = 0; i < 1000; i++) {
-			long probablePrime = 1;
-			while(probablePrime < (long) 1e12)
-				probablePrime *= primes.get(rnd.nextInt(pSize));
-			
-			primes.add(probablePrime + 1);
-		}
+		long start = primesArr[primesArr.length - 1] + 1;
+		addPrimes(start, start + 21000);
 	}
 
-	private static ArrayList<BigInteger> getFactors(BigInteger n) {
+	private static void printFactors(BigInteger n) {
 		ArrayList<BigInteger> factors = new ArrayList<BigInteger>();
-
+		int factorCount = 0;
+		StringBuilder factorsString = new StringBuilder();
 		for(long primeLong : primes) {
 			BigInteger prime = BigInteger.valueOf(primeLong);
+			if(n.compareTo(prime) < 0) break;
 			while(n.mod(prime).compareTo(BigInteger.ZERO) == 0) {
-				factors.add(prime);
+				factorCount++;
+				factorsString.append(prime).append('\n');
 				n = n.divide(prime);
-				if(n.compareTo(prime) < 0) break;
 			}
 		}
-
-		if(n.compareTo(BigInteger.ONE) > 0) factors.add(n);
-
-		return factors;
+		if(n.compareTo(BigInteger.ONE) > 0) {
+			factorCount++;
+			factorsString.append(n).append('\n');
+		}
+		out.println(factorCount);
+		out.print(factorsString.toString());
 	}
 
 	public static void output(String n) throws Exception {
 		BigInteger num = new BigInteger(n);
-		ArrayList<BigInteger> factors = getFactors(num);
-		out.println(factors.size());
-		for(BigInteger factor : factors) out.println(factor);
+		printFactors(num);
 	}
 
 	public static void main(String args[]) throws Exception {		
