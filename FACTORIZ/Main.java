@@ -32,8 +32,8 @@ public class Main {
 	static {
 		primes = new ArrayList<Long>();
 		for(int i = 0; i < primesArr.length; i++) primes.add(primesArr[i]);
-		long start = primesArr[primesArr.length - 1] + 1;
-		addPrimes(start, start + 21000);
+		long start = primesArr[primesArr.length - 1];
+		addPrimes(start, start + 22000);
 	}
 
 	private static void printFactors(BigInteger n) {
@@ -41,8 +41,9 @@ public class Main {
 		int factorCount = 0;
 		StringBuilder factorsString = new StringBuilder();
 		for(long primeLong : primes) {
-			BigInteger prime = BigInteger.valueOf(primeLong);
-			if(n.compareTo(prime) < 0) break;
+			BigInteger prime = BigInteger.valueOf(primeLong),
+					   primeSq = BigInteger.valueOf(primeLong * primeLong);
+			if(n.compareTo(primeSq) < 0) break;
 			while(n.mod(prime).compareTo(BigInteger.ZERO) == 0) {
 				factorCount++;
 				factorsString.append(prime).append('\n');

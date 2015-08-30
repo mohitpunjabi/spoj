@@ -8,7 +8,7 @@ public class Main {
 	private static final int N_LIMIT = 101;
 	private static double[][] mahonian;
 	
-	private static final double MULTIPLIER = 1000;
+	private static final double MULTIPLIER = 1;
 
 	static {
 		mahonian = new double[N_LIMIT][N_LIMIT * N_LIMIT];
@@ -61,11 +61,27 @@ public class Main {
 		if(k == 0) return getInversions(a);
 		int maxSwaps = (n * (n - 1)) / 2;
 		if(k >= maxSwaps) return 0;
-		k--;
-		double expected = 0;
-		for(long i = k + 1; i <= maxSwaps; i++)
-			expected += mahonian[n][(int) i] * (i - k);
-		return expected / MULTIPLIER;
+
+		double[] psum = new double[maxSwaps + 1];
+		
+		psum[0] = mahonian[n][0];
+		for(int i = 1; i <= maxSwaps; i++)
+			psum[i] = psum[i - 1] + mahonian[n][i];
+
+		double totalExpected = 0.0;
+		for(int stop = 1; stop <= k; stop++) {
+			double probability = 1.0;
+			for(int i = 1; i < stop; i++)
+				probability *= MULTIPLIER - psum[(int) k - i];
+			
+			double expected = 0.0;
+			for(int i = (int) k - stop; i <= maxSwaps; i++)
+				expected += mahonian[n][i] * (i - k + stop);
+
+			totalExpected += probability * expected;
+		}
+
+		return totalExpected;
 	}
 
 	public static void output(int[] a, int n, long k) throws Exception {

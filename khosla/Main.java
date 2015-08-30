@@ -1,0 +1,82 @@
+/* IMPORTANT: class must not be public. */
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.*;
+
+class Merchant {
+
+	private static HashMap<String, Merchant> merchants;
+
+	static {
+		merchants = new HashMap<String, Merchant>();
+	}
+
+	private int year;
+	private String name;
+	private ArrayList<Double> sumTransactions;
+	private ArrayList<Integer> freeTransactions;
+
+	private Merchant(String name, int year) {
+		this.name = name;
+		this.year = year;
+		sumTransactions = new ArrayList<Double>(13);
+		freeTransactions = new ArrayList<Integer>(13);
+		for(int i = 0; i <= 12; i++) {
+			sumTransactions.add(0.0);
+			freeTransactions.add(0);
+		}
+	}
+
+	public static Merchant get(String name, int year) {
+		if(merchants.containsKey(year + " " + name))
+			return merchants.get(year + " " + name);
+		
+		Merchant m = new Merchant(name, year);
+		merchants.put(year + " " + name, m);
+		return m;
+	}
+
+	public double addTransaction(String date, double amount) {
+		int thisMonth = getMonthFromDate(date);
+		double cost = getTransactionCost(thisMonth, amount);
+		if(amount <= 5000.0) freeTransactions.set(thisMonth, freeTransactions.get(thisMonth) + 1);
+		sumTransactions.set(thisMonth, sumTransactions.get(thisMonth) + amount);
+		return Math.ceil(cost);
+	}
+
+	private double getTransactionCost(int month, double amount) {
+		if(amount <= 5000.0 && freeTransactions.get(month) < 2)	return 0;
+		if(sumTransactions.get(month) >= 50000.0)				return 0.5 * amount / 100.0;
+		if(amount >= 10000.0)									return 1.0 * amount / 100.0;
+		if(amount >= 5000.0)									return 1.5 * amount / 100.0;
+		return 2.0 * amount / 100.0;
+	}
+	
+	private int getMonthFromDate(String date) {
+		return Integer.parseInt(date.substring(5, 7));
+	}
+
+	public String toString() {
+		return year + " " + name;
+	}
+}
+
+class Main {
+    public static void main(String args[] ) throws Exception {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String line = br.readLine();
+        int N = Integer.parseInt(line);
+        for (int i = 0; i < N; i++) {
+            StringTokenizer tokenizer = new StringTokenizer(br.readLine(), ",");
+            String date = tokenizer.nextToken(),
+            	   name = tokenizer.nextToken();
+        	double amount = Double.parseDouble(tokenizer.nextToken());
+            
+            int year = Integer.parseInt(date.substring(0, 4));
+            Merchant m = Merchant.get(name, year);
+            Double d = m.addTransaction(date, amount);
+            System.out.printf("%.2f\n", d);
+        }
+    }
+}
